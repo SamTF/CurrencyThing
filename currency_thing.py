@@ -172,7 +172,7 @@ async def balance(ctx, user=None):
     print(f'getting balance of user: {user}')
     
     b = Blockchain.get_balance(str(user.id))
-    await ctx.send(b)
+    await ctx.send(f'{user} owns **{b}** currency things 💰')
 
 
 # SEND COINS! :D much wow such cool
@@ -201,7 +201,7 @@ async def send(ctx, size, output):
         await ctx.send(msg)
         return
     
-    await ctx.send(f'Successfuly sent {size} currency things to {output}! 💸')                                          # Otherwise, display Success message
+    await ctx.send(f'*Successfuly sent {size} currency things to {output}! 💸*')                                          # Otherwise, display Success message
 
 
 
