@@ -26,8 +26,9 @@ BOT_USER_ID = 840976021687762955
 
 ### Variables
 Blockchain = None                                                           # the Blockchain object that stores the blockchain as df and does the verifying operations
-tmp_winners_df = pd.DataFrame(columns=['miner', 'count'])                   # tmp dataframe containing all the IDs of users who successfully mined a message
+# tmp_winners_df = pd.DataFrame(columns=['miner', 'count'])                   # tmp dataframe containing all the IDs of users who successfully mined a message
                                                                             # used to sum rewards owed to the same person, to optimise the amount of trades required and to not clog the blockchain
+tmp_winners_df = pd.read_csv('tmp_miner_rewards.csv')
 
 
 ###### DISCORD STUFF ############################################################
@@ -51,7 +52,6 @@ async def on_ready():
     Blockchain = blockchain.Blockchain(block_df)
     print(Blockchain)
 
-    await update_status()
 
 ## POINT I - LISTEN TO ALL MESSAGES ON GENERAL CHAT
 @bot.event
@@ -113,7 +113,8 @@ async def add_tmp_winner(winner: int):
 
 # Custom status tracking amount of currency things in circulation
 async def update_status():
-    await bot.change_presence(activity=discord.Game(f'{len(Blockchain.chain.index)} 💎🙌'))
+    circulation = Blockchain.get_balance(bot.user.id) * -1                          # coins in circulation = the balance of the bot user, but positive
+    await bot.change_presence(activity=discord.Game(f'{circulation} things 💎🙌'))
 
 
 
