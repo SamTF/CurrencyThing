@@ -60,8 +60,8 @@ async def on_message(message):
     # await bot.process_commands(message)                                 # not all needed now that we're using slash / commands
 
 
-    # Any message on #TextChatGenerals that is not by this bot
-    if (message.channel.id == TERMINAL) and (message.author.id != bot.user.id):
+    # Any message on not on #Blockchain that is not by this bot
+    if (message.channel.id != BLOCKCHAIN) and (message.author.id != bot.user.id):
         id = message.id
         server = message.guild.id
         channel = message.channel.id
