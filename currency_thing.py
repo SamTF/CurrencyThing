@@ -43,14 +43,14 @@ async def on_ready():
     await bot.change_presence(activity=discord.Game('Status'))              # custom status! (has a new syntax)
     print(bot)                                                              # debug print
 
-    # starts the reward-giving task
-    give_mining_rewards.start()
-
-    # initiates the blockchain
+        # initiates the blockchain
     global Blockchain
     block_df = await get_blockchain(None)
     Blockchain = blockchain.Blockchain(block_df)
     print(Blockchain)
+
+    # starts the reward-giving task - MUST be after blockchain
+    give_mining_rewards.start()
 
 
 ## POINT I - LISTEN TO ALL MESSAGES ON GENERAL CHAT
