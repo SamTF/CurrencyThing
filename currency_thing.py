@@ -28,7 +28,7 @@ BOT_USER_ID = 840976021687762955
 Blockchain = None                                                           # the Blockchain object that stores the blockchain as df and does the verifying operations
 # tmp_winners_df = pd.DataFrame(columns=['miner', 'count'])                   # tmp dataframe containing all the IDs of users who successfully mined a message
                                                                             # used to sum rewards owed to the same person, to optimise the amount of trades required and to not clog the blockchain
-tmp_winners_df = pd.read_csv('tmp_miner_rewards.csv')
+tmp_winners_df = pd.read_csv('tmp_miner_rewards.csv', index_col=0)
 
 
 ###### DISCORD STUFF ############################################################
