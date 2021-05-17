@@ -52,6 +52,8 @@ async def on_ready():
     # starts the reward-giving task - MUST be after blockchain
     give_mining_rewards.start()
 
+    await update_status()                                                   # updates amount of coins in circulation
+
 
 ## POINT I - LISTEN TO ALL MESSAGES ON GENERAL CHAT
 @bot.event
@@ -72,12 +74,11 @@ async def on_message(message):
 
         ### POINT II - MINE EACH MESSAGE
         # threeading literally not needed because this is an async func! WOW!!! (could need to re-implement the queue if spamming attacks somehow break thru the checks?)
-        msg = [message.content, message.author.name, message.created_at]    # gets all the relevant info from the message, and dumps it into an array
+        msg = [message.content, message.author.name, message.created_at]            # gets all the relevant info from the message, and dumps it into an array
         print(msg)
-        winner = miner.mine(str(msg))                                       # uses the miner.py script to mine it
-
-        # await create_block(bot.user.id, 1, winner.id)                       # starts the block creation process by awarding a miner 1 coin from the bot
-        await add_tmp_winner(winner.id)                                     # adds user to tmp dataframe
+        
+        winner = miner.mine(str(msg))                                               # uses the miner.py script to mine it
+        await add_tmp_winner(winner.id)                                             # adds user to tmp dataframe
 
 
 
@@ -86,8 +87,8 @@ async def on_message(message):
 ### POINT III - ANTI-TAMPER MEASURES & POINT IV - ADD TRANSACTION DATA TO THE #BLOCKCHAIN CHANNEL
 # Uses the blockchain to create a block for this transaction by adding an ID and hashing the previous block
 async def create_block(input, size, output):
-    # block = blockchain.create_block(input, size, output)                  # gets the properly formatted and verified block from the blockchain
-    block, msg = Blockchain.create_block(input, size, output)               # gets the properly formatted and verified block from the blockchain
+    # block = blockchain.create_block(input, size, output)                          # gets the properly formatted and verified block from the blockchain
+    block, msg = Blockchain.create_block(input, size, output)                       # gets the properly formatted and verified block from the blockchain
 
     # check if block is an array and not a ValueError
     if block == ValueError:
@@ -95,10 +96,10 @@ async def create_block(input, size, output):
         return block, msg
 
     ### POINT IV - ADD TRANSACTION DATA TO THE #BLOCKCHAIN CHANNEL
-    channel = bot.get_channel(BLOCKCHAIN)                                   # gets the #blockchain channel
-    await channel.send(block)                                               # writes the block into the #blockchain channel
+    channel = bot.get_channel(BLOCKCHAIN)                                           # gets the #blockchain channel
+    await channel.send(block)                                                       # writes the block into the #blockchain channel
 
-    return block, msg                                                       # sends a successful transaction confirmation
+    return block, msg                                                               # sends a successful transaction confirmation
 
 
 # Adds users to the temporary dataframe of miner rewards
@@ -108,7 +109,7 @@ async def add_tmp_winner(winner: int):
     i = len(tmp_winners_df.index)
     tmp_winners_df.loc[i] = [winner, 1]
 
-    tmp_winners_df.to_csv('tmp_miner_rewards.csv')                          # saves a backup copy in case the bot crashes
+    tmp_winners_df.to_csv('tmp_miner_rewards.csv')                                  # saves a backup copy in case the bot crashes
 
 
 # Custom status tracking amount of currency things in circulation
@@ -206,7 +207,7 @@ async def send(ctx, size, output):
 
 
 ###### TASKS #################################################
-@tasks.loop(hours=1)
+@tasks.loop(hours=12)
 async def give_mining_rewards():
     print('[CURRENCY THING] >>> Giving miners their rewards')
     global tmp_winners_df
