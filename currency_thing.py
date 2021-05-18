@@ -114,7 +114,9 @@ async def add_tmp_winner(winner: int):
 
 # Custom status tracking amount of currency things in circulation
 async def update_status():
-    circulation = Blockchain.get_balance(bot.user.id) * -1                          # coins in circulation = the balance of the bot user, but positive
+    print('[CURRENCY THING] >>> Updating Status')
+    # circulation = Blockchain.get_balance(bot.user.id) * -1                          # coins in circulation = the balance of the bot user, but positive
+    circulation = Blockchain.get_supply(bot.user.id)
     await bot.change_presence(activity=discord.Game(f'{circulation} things 💎🙌'))
 
 
@@ -161,19 +163,35 @@ guild_ids = [349267379991347200]                                                
             options=[                                                                                                   # Creating specific types of arguments (refer to the getting started docs linked above)
                create_option(
                  name="user",                                                                                           # MUST HAVE the SAME NAME as the argument in the function
-                 description="🪙🪙🪙",                                                                                     # coin emojis
+                 description="💰👀",                                                                                     # coin emojis
                  option_type=6,                                                                                         # 6 = Discord User
                  required=False
                )
             ])
 async def balance(ctx, user=None):
+    # getting the balance of ALL users
     if user == None:
-        user = ctx.author
+        # user = ctx.author
+        print('[CURRENCY THING] >>> Getting all user balance')
 
-    print(f'getting balance of user: {user}')
+        users = Blockchain.chain.groupby(['OUTPUT']).sum().index.to_list()                                              # getting a list of all the users that own currency things
+        msg = "**--- Balance Of All Users ---**\n"                                                                      # string to store the output messages, to send them all at once
+
+        for user in users:
+            id = user[2:20]                                                                                             # extracts the user ID, removing the mention syntax ("<@000>")
+            b = Blockchain.get_balance(id)                                                                              # gets the balance of that user with the Blockchain.py script
+            msg += (f'{user} owns **{b}** currency things 💰\n')                                                        # appens the user's balance to the discord channel using @mentions instead of username to the string
+
+        await ctx.send(msg)                                                                                             # sends message with all users' balance
+        return                                                                                                          # ends the function right here
+
+    # otherwise gets balance of specific user
+    print(f'[CURRENCY THING] >>> Getting balance of user: {user}')
     
-    b = Blockchain.get_balance(str(user.id))
+    b = Blockchain.get_balance(str(user.id))                                                                            # gets the balance of that user with the Blockchain.py script
     await ctx.send(f'{user} owns **{b}** currency things 💰')
+
+
 
 
 # SEND COINS! :D much wow such cool
@@ -228,10 +246,6 @@ async def give_mining_rewards():
 
 
 ##################################################################################
-# print('xxxxxxxxxxxxx')
-# xxx = asyncio.run(get_blockchain(None))
-# print(xxx)
-
 
 
 
