@@ -1,5 +1,6 @@
 ### IMPORTS
 # The discord bot commands
+from os import name
 import discord                                                              # the main discord module
 from discord.ext import commands, tasks                                     # commands are obvious, tasks are background loops run every X seconds
 
@@ -14,6 +15,7 @@ import pandas as pd
 import users as Users                                                       # stores class objects of all users registered to mine
 import blockchain                                                           # stores the dataframe, adds and verifies blocks, calculates user balance
 import miner                                                                # mines messages
+import explorer                                                             # gets cool statistics and achievements from the blockchain without interfering with it
 
 
 print("_____________Currency Thing INITIALISED_____________")
@@ -30,7 +32,6 @@ Blockchain = None                                                           # th
                                                                             # used to sum rewards owed to the same person, to optimise the amount of trades required and to not clog the blockchain
 tmp_winners_df = pd.read_csv('tmp_miner_rewards.csv', index_col=0)
 
-
 ###### DISCORD STUFF ############################################################
 ### Creating the bot!
 bot = commands.Bot(command_prefix='coin emoji')
@@ -43,7 +44,7 @@ async def on_ready():
     await bot.change_presence(activity=discord.Game('Status'))              # custom status! (has a new syntax)
     print(bot)                                                              # debug print
 
-        # initiates the blockchain
+    # initiates the blockchain
     global Blockchain
     block_df = await get_blockchain(None)
     Blockchain = blockchain.Blockchain(block_df)
@@ -129,7 +130,6 @@ async def get_blockchain(ctx):
     df.set_index('ID', inplace=True)                                                # sets the block ID column as the dataframe index
     channel = bot.get_channel(BLOCKCHAIN)                                           # gets the #blockchain text channel
 
-
     async for msg in channel.history(limit=None):                                   # loops through every single message in the blockchain
         if msg.author != bot.user: continue                                         # only counts messages by the approved bot (the blockchain manager essentially)
 
@@ -138,6 +138,7 @@ async def get_blockchain(ctx):
         if len(data) != 5:  continue                                                # blocks have exactly 5 values, anything else is formatted incorrectly
 
         i = data.pop(0)                                                             # gets the first item in the array as the transaction ID
+        data.append(msg.created_at)                                                 # !! ADDITION - Also saving the trade timestamp
         df.loc[i] = data                                                            # appens the rest of the array to the dataframe
 
     
@@ -155,7 +156,7 @@ async def get_blockchain(ctx):
 slash = SlashCommand(bot, sync_commands=True)                                                                           # Initialises the @slash dectorator - NEEDS THE SYNC COMMANDS to be true
 guild_ids = [349267379991347200]                                                                                        # The Server ID - not sure why did this needed
 
-
+### CURRENCY INTERACTIONS ###
 # Gets how many coins a user owns
 @slash.slash(name='balance',                                                                                            # Name of the Slash command / not the function itself
             guild_ids=guild_ids,                                                                                        # For some reason, this is needed here, but not on the test command?
@@ -222,6 +223,15 @@ async def send(ctx, size, output):
     
     await ctx.send(f'*Successfuly sent {size} currency things to {output}! 💸*')                                          # Otherwise, display Success message
 
+
+### MILESTONES & ACHIEVEMENTS ###
+@slash.slash(name='milestones',
+            guild_ids=guild_ids,
+            description='🥳 Who mined the milestone Currency Things? 🎉')
+async def milestones(ctx):
+    msg = explorer.get_mining_milestones(Blockchain.blockchain)
+
+    await ctx.send(msg)
 
 
 ###### TASKS #################################################

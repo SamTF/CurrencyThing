@@ -1,9 +1,9 @@
 ### IMPORTS
-import hashlib
-import pandas as pd
-from os import path
+import hashlib                          # Hashing messages and emotes, and checking if miners found the correct hash key
+import pandas as pd                     # The blockchain is basically a pandas dataframe saved as CSV
+from datetime import datetime           # Used to get the current timestamp
 
-import users as Users
+import users as Users                   # My own script with all necessary info for all users
 
 # Constants
 DIFFICULTY = 4                          # the amount of characters in a hash that need to match a user's hex to mine successfully
@@ -12,7 +12,7 @@ CREATOR_ID = 840976021687762955         # The User that sends rewards to miners
 HASH_TRUNC = 8                          # Block hashes will be 8 characters long to be short but avoid collisions
 EMOTES     = 'emote_codes.csv'
 # FORMAT   = [Transaction ID, Sender, Amount, Receiver, previous plock Hash]
-FORMAT     = ['ID', 'INPUT', 'SIZE', 'OUTPUT', 'PREV_HASH']
+FORMAT     = ['ID', 'INPUT', 'SIZE', 'OUTPUT', 'PREV_HASH', 'TIME']
 
 # >>> COLLISION DETECTED <<<
 # It took 166.5872585773468 seconds and 132773 hashes to find a collision
@@ -27,13 +27,13 @@ class Blockchain:
     def __init__(self, chain: pd.DataFrame):
         self.chain          = chain
         self.chain['SIZE'] = pd.to_numeric(self.chain['SIZE'])                      # Converts the SIZE column into INT type; otherwise it assumes STRING type
+        self.chain['TIME'] = pd.to_datetime(self.chain['TIME'])                     # Converts the TIME column into datetime format
     
 
-    # Adds a new row to the blockchain - not in use
-    def append(self, data: list):
-        id = len(self.chain.index)                                                      # the id# of this transactions
-        self.chain.loc[id] = data                                                       # appends it to the blockchain
-        self.chain.to_csv(BLOCKCHAIN)                                                   # saves the updated blockchain
+    # A read-only copy of the blockchain so other scripts can see it without being able to modify it
+    @property
+    def blockchain(self):
+        return self.chain
 
 
 
@@ -101,13 +101,16 @@ class Blockchain:
 
         
         ### Creating the actual block
-        # FORMAT = [Transaction ID, Sender, Amount, Receiver, previous plock Hash]
+        #OG FORMAT = [Transaction ID, Sender, Amount, Receiver, previous plock Hash]
+        #EXPANDED FORMAT = [Transaction ID, Sender, Amount, Receiver, previous plock Hash, Timestamp]
         block_id = len(self.chain.index)                                                # the transaction ID is the current length of the blockchain
 
-        sender = f'<@{input}>'                                                          # using discord @ formating
-        receiver = f'<@{output}>'
+        sender      = f'<@{input}>'                                                     # using discord @ formating
+        receiver    = f'<@{output}>'
+        timestamp   = datetime.now()                                                    # !! ADDITION - Also saving the trade timestamp
 
-        block = [sender, amount, receiver, prev_hash]                                   # formats the whole block
+        # block = [sender, amount, receiver, prev_hash]                                   # formats the whole block - OG
+        block = [sender, amount, receiver, prev_hash, timestamp]                        # formats the whole block - EXPANDED FORMAT
         self.chain.loc[block_id] = block                                                # appends the block to the blockchain dataframe at the correct ID
         self.chain.to_csv(BLOCKCHAIN)                                                   # saves the blockchain to disk as a backup
 
@@ -140,23 +143,6 @@ class Blockchain:
 
         return OUTPUT.loc[user]['SIZE'] - sent                                          # Subtracts the amount sent (INPUT table) from the amount received (OUTPUT table) to get the current balance 
 
-        ### old version:
-        # balance = 0
-        # user = f'<@{user}>'
-
-        # for index, row in self.chain.iterrows():                                    # loops through every single row (transaction) in the dataframe (blockchain)
-        #     # ['INPUT', 'SIZE', 'OUTPUT', 'PREV_HASH']
-        #     block = row.tolist()                                                    # converts the pandas row to an array to make this easier
-        #     # print(block)
-        #     if (user in block):                                                     # checks if the user ID is in the transaction
-        #         size    = int(block[1])                                             # the value of the transaction - must convert from str to int
-        #         position    = block.index(user)                                     # the position of the user in the block : 0 = sender, 2 = receiver
-
-        #         type = -1 if (position==0) else 1                                   # user was the sender(input) if their position in the transaction is 0, therefore making it a negative transaction (spent currency)
-        #         balance += size * type                                              # negative quantity if sender, positive quantity if receiver
-
-        # print(f'[{user}] >>> balance: {balance}')
-        # return balance
     
     # Gets the total amount of currency things in circulation / the amount mined
     def get_supply(self, bot: id):
