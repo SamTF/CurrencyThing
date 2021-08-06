@@ -99,9 +99,13 @@ def get_mining_milestones(blockchain: pd.DataFrame):
     latest_thousand = get_thousands(get_supply(blockchain))
     milestones      = range(1000, latest_thousand + 1000, 1000)
 
-    # loading the milestones dataframe from disk
-    milestones_df           = pd.read_csv('milestones.csv', index_col=0)
-    milestones_df['DATE']   = pd.to_datetime(milestones_df['DATE'])
+    # loading the milestones dataframe from disk OR creating it if it doesn't exist
+    try:
+        milestones_df           = pd.read_csv('milestones.csv', index_col=0)
+        milestones_df['DATE']   = pd.to_datetime(milestones_df['DATE'])
+    except:
+        milestones_df = pd.DataFrame(columns=['MILESTONE', 'USER', 'ID', 'DATE']).set_index('MILESTONE')
+
 
     # Checks if the Milestones DF on disk is up to date. If not, updates it and overwrites it.
     if not latest_thousand in milestones_df.index:

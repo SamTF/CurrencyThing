@@ -109,13 +109,15 @@ class Blockchain:
         receiver    = f'<@{output}>'
         timestamp   = datetime.now()                                                    # !! ADDITION - Also saving the trade timestamp
 
+        # Formatting the block for the blockchain CSV
         # block = [sender, amount, receiver, prev_hash]                                   # formats the whole block - OG
         block = [sender, amount, receiver, prev_hash, timestamp]                        # formats the whole block - EXPANDED FORMAT
         self.chain.loc[block_id] = block                                                # appends the block to the blockchain dataframe at the correct ID
         self.chain.to_csv(BLOCKCHAIN)                                                   # saves the blockchain to disk as a backup
 
+        # Formatting the block for the real discord blockchain
         block.insert(0, block_id)                                                       # inserts the block_id for the #blockchain channel to know the order of blocks - not needed for the dataframe
-        block_content = '   '.join(map(str, block))                                     # displays the block as a single string, instead of an array, seperated by spaces
+        block_content = '   '.join(map(str, block[:-1]))                                # displays the block as a single string, instead of an array, seperated by spaces, MINUS the last element the timestamp, which is redundant on discord
 
         return block_content, 'block processed successfully :)'                         # returns the discord-readable block and a success message :)
 
