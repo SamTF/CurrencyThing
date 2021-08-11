@@ -48,7 +48,7 @@ def get_supply(blockchain: pd.DataFrame) -> int:
     '''
     INPUT = blockchain.groupby(['INPUT']).sum()                                     # INPUT  Dataframe - sums all currency things SENT BY each user - where the user is on the INPUT  side of the trade
     supply = INPUT.loc[f'<@{CREATOR_ID}>']['SIZE']                                  # Sums all currency things sent by the discord bot - aka total supply
-    print(f'[EXPLORER] >>> Current supply: {supply}')
+    # print(f'[EXPLORER] >>> Current supply: {supply}')
 
     return supply
 
@@ -78,8 +78,8 @@ def who_mined_xth_thing(thing: int, blockchain: pd.DataFrame, cum_supply: pd.Dat
     df = blockchain.loc[blockchain['INPUT'] == f'<@{CREATOR_ID}>']              # All currency things sent by the Currency Thing bot (mined)
     df['SUPPLY'] = supply_over_tx(blockchain)['SIZE']                           # Adds the total supply at each point as a column to the dataframe
 
-    filter = df.loc[df['SUPPLY'] <= thing]                                      # Getting all trades where the supply is less than the amount we're looking for (anything after that is after the nth thing was mined, so the last trade before then was the miner)
-    winner = filter.tail(1)[['OUTPUT', 'TIME']]                                 # Gets the last row before the limit - the winner - only the Output and Time columns
+    filter = df.loc[df['SUPPLY'] >= thing]                                      # Getting all trades where the supply is MORE than the amount we're looking for (the first trade after the thousandth milestone is the winner)
+    winner = filter.head(1)[['OUTPUT', 'TIME']]                                 # Gets the first row after the limit - the winner - only the Output and Time columns
 
     # Getting the direct values
     user = winner.iloc[0]['OUTPUT']
@@ -129,7 +129,7 @@ def get_mining_milestones(blockchain: pd.DataFrame):
         date    = row['DATE'].strftime('%d/%m')
 
         # formatting this into a string and appending it to the main string
-        msg += (f'**{thing}th** currency thing: ➤  {user} ({date} @ trade #{trade})\n')
+        msg += (f'**{thing}th** currency thing: ➤  {user} ({date} #{trade})\n')
     
     return msg
 
