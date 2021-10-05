@@ -21,10 +21,8 @@ import explorer                                                             # ge
 print("_____________Currency Thing INITIALISED_____________")
 
 #### Constants
-TEXTCHANNEL = 349267380452589568
-TERMINAL    = 829873052963700746
+TOKEN_FILE = '.currency_thing.token'                                        # Name of the text file storing the unique Discord bot token (very dangerous, do not share)
 BLOCKCHAIN  = 840988631044456488
-BOT_USER_ID = 840976021687762955
 
 ### Variables
 Blockchain = None                                                           # the Blockchain object that stores the blockchain as df and does the verifying operations
@@ -235,7 +233,7 @@ async def milestones(ctx):
 
 
 ###### TASKS #################################################
-@tasks.loop(hours=12)
+@tasks.loop(hours=24)
 async def give_mining_rewards():
     print('[CURRENCY THING] >>> Giving miners their rewards')
     global tmp_winners_df
@@ -260,9 +258,11 @@ async def give_mining_rewards():
 
 
 
-### Runs the bot
+###### RUNNING THE BOT #################################################
 if (__name__ == "__main__"):
-    token = 'ODQwOTc2MDIxNjg3NzYyOTU1.YJgB9A.9ec8hGDn2aVySgz3_94nLmKhxmc'
+    with open(TOKEN_FILE, 'r') as f:
+        token = f.read()
     bot.run(token)
+
 else:
     print ("DISCORD BOT IMPORTED")
