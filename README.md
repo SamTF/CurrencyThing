@@ -3,6 +3,8 @@ A crypto-currency backed by discord messages. The block chain is a channel on di
 
 Check out the [Currency Thing page on my website](http://sam.freelancepolice.org/discord_bots/currencything) for more details on how and why it was designed.
 
+Browse the Currency Thing blockchain online at https://currencything.com/!
+
 # Showcase
 ![Genesis Block](http://sam.freelancepolice.org/static/projects/discord_bots/currencything/showcase/genesis.jpg)
 
